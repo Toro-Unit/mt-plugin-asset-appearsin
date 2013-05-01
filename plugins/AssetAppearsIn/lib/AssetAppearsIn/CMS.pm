@@ -33,7 +33,9 @@ sub list_asset {
         if ( $file_path && $fmgr->exists( $file_path ) ) {
             $row->{file_path} = $file_path;
             $row->{file_name} = File::Basename::basename( $file_path );
-            my $size = $fmgr->file_size( $file_path );
+            ##MT:FileMgr->file_size on MT5!!!
+            #my $size = $fmgr->file_size( $file_path );
+            my $size = -s $file_path;
             $row->{file_size} = $size;
             if ( $size < 1024 ) {
                 $row->{file_size_formatted} = sprintf( "%d Bytes", $size );
@@ -53,7 +55,7 @@ sub list_asset {
         }
         $row->{file_label} = $row->{label} = $obj->label || $row->{file_name} || $app->translate('Untitled');
 
-        if ($obj->has_thumbnail) { 
+        if ($obj->has_thumbnail) {
             $row->{has_thumbnail} = 1;
             my $height = $thumb_height || $default_thumb_height || 75;
             my $width  = $thumb_width  || $default_thumb_width  || 75;
@@ -112,7 +114,7 @@ sub list_asset {
             }
             push @appears_in, \%entry_data;
         }
-        if (4 == @appears_in) {    
+        if (4 == @appears_in) {
             pop @appears_in;
             $row->{appears_in_more} = 1;
         }
@@ -142,17 +144,13 @@ sub asset_table {
     my ($cb, $app, $tmpl) = @_;
 
     my $old = <<HERE;
-                <th class="created-on"><__trans phrase="Created On"></th>
-            </tr>
-        </mt:setvarblock>
+                <th id="as-view" class="status-view"><__trans phrase="View"></th>
 HERE
     $old = quotemeta($old);
 
     my $new = <<HERE;
-                <th class="created-on"><__trans phrase="Created On"></th>
-                <th class="created-on"><__trans phrase="Appears in..."></th>
-            </tr>
-        </mt:setvarblock>
+                <th id="as-view" class="status-view"><__trans phrase="View"></th>
+                <th id="as-used">利用状況</th>
 HERE
 
     $$tmpl =~ s/$old/$new/;
